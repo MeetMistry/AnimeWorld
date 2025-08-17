@@ -6,42 +6,60 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.animeworld.screens.details.DetailsScreenRoute
+import com.example.animeworld.screens.home.HomeScreenRoute
 import com.example.animeworld.ui.theme.AnimeWorldTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AnimeWorldTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navController = rememberNavController()
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+                    NavHost(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        navController = navController,
+                        startDestination = "home",
+                    ) {
+                        composable("home") {
+                            HomeScreenRoute(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .systemBarsPadding(),
+                                navController = navController
+                            )
+                        }
+                        composable(
+                            "details/{animeId}",
+                            arguments = listOf(navArgument("animeId") { type = NavType.IntType })
+                        ) { backstackEntry ->
+                            val animeId = backstackEntry.arguments?.getInt("animeId")
+                            DetailsScreenRoute(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .systemBarsPadding(),
+                                animeId = animeId ?: 0
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AnimeWorldTheme {
-        Greeting("Android")
     }
 }
